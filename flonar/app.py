@@ -1,5 +1,9 @@
 # -*- coding: latin1 -*-
 
+#SwissLegalTech Hackathon 2018, Sep 17-19th, Zurich
+#Team Mighty Bytes - Oceane, Ioannis, Andreas, Nico
+#Designed and programmed in the backyard
+
 import json
 import socket
 import pyramid
