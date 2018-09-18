@@ -4,9 +4,52 @@
     <title>FLONAR</title>
   </head>
 
+<style>
+.button {
+  border-radius: 8px;
+  background-color: #057B26;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 30px;
+  padding: 20px;
+  width: 300px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.button span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.button:hover span {
+  padding-right: 25px;
+}
+
+.button:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+
+
+</style>
+
+
   <body>
     <h1>FLONAR Pflanzabstand</h1>
-
 
 
     <hr>
@@ -14,26 +57,23 @@
 
     <form action="http://localhost/flonar/pa" method="GET">
 
-    <div>
+    <div><p>
       <label for="canton">Kanton:</label>
       <input name="canton" id="canton" value="ZH">
-    </div>
-    <div>
+    </p></div>
+    <div><p>
       <label for="distance">Entfernung der Hecke in Meter:</label>
       <input name="distance" id="distance" value="1.2">
-    </div>
-    <div>
-      <label for="height">Höhe der Hecke in Meter:</label>
+    </p></div>
+    <div><p>
+      <label for="height">Hoehe der Hecke in Meter:</label>
       <input name="height" id="height" value="1.5">
-    </div>
+    </p></div>
     <div>
-      <button>FLONAR konsultieren</button>
+        <button class="button"><span>FLONAR konsultieren</span></button>
     </div>
-</form>
+    </form>
 
-<!-- Created: Tue Sep 18 11:40:55 Mitteleuropäische Sommerzeit 2018 -->
-<!-- hhmts start -->
-Last modified: Tue Sep 18 12:39:47 Mitteleuropäische Sommerzeit 2018
-<!-- hhmts end -->
+
   </body>
 </html>

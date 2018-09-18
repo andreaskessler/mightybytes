@@ -1,10 +1,13 @@
 # -*- coding: latin1 -*-
 
 import json
+import socket
 import pyramid
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
+
+import renderer
 
 paconfigStr = """
 ZH;  0;      0;       0;
@@ -91,6 +94,7 @@ VD;	10; Der Anspruch auf Beseitigung verjährt nach 10 Jahren. Nach Ablauf der 10
 VS;	5; Der Anspruch auf Beseitigung verjährt nach 5 Jahren ab Pflanzung oder bei überschrittener Höhe ab Ende des Jahres.
 ZG;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
 ZH;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+
 """
 
 class PflanzAbstandEngine(object):
@@ -181,7 +185,7 @@ def flonarpa_engine(request):
     return Response(rsp)
 
 def flonar_pa_form(request):
-    return pyramid.response.FileResponse("res/ab.html", request=request)
+    return pyramid.response.FileResponse("res/flonar_dyn.html", request=request)
 
 if __name__ == '__main__':
     # Engine startup test.
@@ -189,6 +193,10 @@ if __name__ == '__main__':
     print("Startuptest: %s" % flonar_planzabstand('TI', 0.4, 1.37))
     # Webserver start.
     with Configurator() as config:
+        # Render main page.
+        rd = {}
+        rd['localhost'] = socket.gethostbyname(socket.gethostname())
+        renderer.Page("res/ab.html", "res/flonar_dyn.html", rd)
         # Flonar main. Currently only Pflanzabstand form.
         config.add_route('flonar', '/flonar')
         config.add_view(flonar_pa_form, route_name='flonar')
