@@ -1,6 +1,7 @@
 # -*- coding: latin1 -*-
 
 import json
+import pyramid
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
@@ -179,12 +180,18 @@ def flonarpa_engine(request):
     rsp = flonar_planzabstand(canton, distance, height)
     return Response(rsp)
 
+def flonar_pa_form(request):
+    return pyramid.response.FileResponse("res/ab.html", request=request)
+
 if __name__ == '__main__':
     # Engine startup test.
     print("Startuptest: %s" % flonar_planzabstand('ZH', 2.3, 2.0))
     print("Startuptest: %s" % flonar_planzabstand('TI', 0.4, 1.37))
     # Webserver start.
     with Configurator() as config:
+        # Flonar main. Currently only Pflanzabstand form.
+        config.add_route('flonar', '/flonar')
+        config.add_view(flonar_pa_form, route_name='flonar')
         # Pflanzabstand engine IF 1.
         config.add_route('flonarpa', '/flonar/pa/{canton}/{distance}/{height}')
         config.add_view(flonarpa_engine, route_name='flonarpa')
