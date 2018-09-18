@@ -181,8 +181,14 @@ def flonarpa_engine(request):
         heightStr = request.GET['height']
     distance = float(distanceStr)
     height = float(heightStr)
-    rsp = flonar_planzabstand(canton, distance, height)
-    return Response(rsp)
+    rspj = flonar_planzabstand(canton, distance, height)
+    rsp = json.loads(rspj)
+    if rsp['isLegal']:
+        bdy = renderer.Http("res/Tree_green_body.html", rsp)
+    else:
+        bdy = renderer.Http("res/Tree_red_body.html", rsp)
+    return pyramid.response.Response(body=bdy.http)
+
 
 def flonar_pa_form(request):
     return pyramid.response.FileResponse("res/flonar_dyn.html", request=request)
