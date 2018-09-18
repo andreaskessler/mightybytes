@@ -67,6 +67,7 @@ class PflanzAbstandEngine(object):
                 print ("\t%s\t%s\t%s\t%s" % piecewiseLinearTuple)
 
     def __interpolate(self, case_d, case_h, piecewiseLinearTupleList):
+        # Return tuple (isLegal, maxAllowedHeight, comment)
         isLegal = False
         maxAllowedHeight = 999.0
         comment = 'interpolation error'        
@@ -81,14 +82,18 @@ class PflanzAbstandEngine(object):
     def consult(self, canton, d, h):
         # Consult about a relevant case in canton, distance from
         # clients property d, height of hecke h.
-        # Return tuple (isLegal, maxAllowedHeight, comment)
+        # Return dict with attributes.
         isLegal = False
         maxAllowedHeight = 999.0
         comment = 'Not yet implemented'
         canton = canton.upper()
         if canton in self.plfDict_:
             isLegal, maxAllowedHeight, comment = self.__interpolate(d, h, self.plfDict_[canton])
-        return (isLegal, maxAllowedHeight, comment)
+        res = {}
+        res['isLegal'] = isLegal
+        res['maxAllowedHeight'] = maxAllowedHeight
+        res['comment'] = comment
+        return res
 
 pflanzAbstandEngine = None
 
