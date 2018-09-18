@@ -1,11 +1,103 @@
+# -*- coding: latin1 -*-
+
 import json
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
 
+paconfigStr = """
+ZH;  0;      0;       0;
+ZH;  0.6;   1.2;    0.5;
+AG;     0;       0;        0;
+AG;     0.6;     1.8;      0;
+AR;     0;       0;        0;
+AR;  0.5;        1.2;      1;
+AI;     0;       2;        0;
+BL;     0;       0;        0;
+BL;     0.6;     1.8;      3;
+BS;     0;       2;        0;
+BE;     0;       0;        0;
+BE;     0.5;     1.2;      1;
+BE;     3.5;     9999; 0;
+FR;     0;       0;        0;
+FR;     0.6;     1.2;      0; Lebhag muss mindestens alle 2 Jahre zurückgeschnitten werden
+GE;     0;       0;        0;
+GE;     0.5;     2;        2.666;
+GE;     2;       6;        0.5;
+GE;     5;       12;       0;
+GL;     0;       1.2;      0; Grünhäge sollen, wenn der Anstösser es verlangt, jährlich ordentlich beschnitten werden
+GR;     0;       0;        0;
+GR;     0.5;     1.5;      1;
+GR;     2.5;     9999; 0;
+JU;     0;       0;        0;
+JU;     0.5;     1.2;      1;
+JU;     3.5;     9999; 0;
+LU;     0;       0;        0;
+LU;     0.5;     1;        0.5;
+LU;     4;       9999; 0;
+NE;     0;       0;        0;
+NE;     1;       1.5;      0; Sofern es sich beim Nachbargrundstück um einen Garten handelt
+
+"""
+
+class PflanzAbstandEngine(object):
+    def __init__(self, configStr):
+        self.plfDict_ = {}
+        self.__readConfig(configStr)
+
+    def __readConfig(self, configStr):
+        for l in configStr.splitlines():
+            tuples = l.split(";")
+            if len(tuples) != 5:
+                if l.strip():
+                    print("Pflanzabstand config has illegal length (!=5): %s" % l)
+                continue
+            canton, d, h, s, comment = map(lambda s: s.strip(), tuples)
+            canton = canton.upper()
+            if not canton in self.plfDict_:
+                self.plfDict_[canton] = []
+            self.plfDict_[canton].append((float(d), float(h), float(s), comment))
+        print("Pflanzabstand configured.")
+        for c in self.plfDict_:
+            print(c),
+            # Sort the piecewise linear function definition tuple list,
+            # we rely on that in interpolation.
+            self.plfDict_[c].sort()
+            for piecewiseLinearTuple in self.plfDict_[c]:
+                print ("\t%s\t%s\t%s\t%s" % piecewiseLinearTuple)
+
+    def __interpolate(self, case_d, case_h, piecewiseLinearTupleList):
+        isLegal = False
+        maxAllowedHeight = 999.0
+        comment = 'interpolation error'        
+        for d, h, s, cmt in piecewiseLinearTupleList:
+            if case_d >= d:
+                # This is applicable. It might be changed by later segments, though.
+                maxAllowedHeight = h + s * (case_d - d)
+                isLegal = case_h <= maxAllowedHeight
+                comment = cmt
+        return (isLegal, maxAllowedHeight, comment)
+
+    def consult(self, canton, d, h):
+        # Consult about a relevant case in canton, distance from
+        # clients property d, height of hecke h.
+        # Return tuple (isLegal, maxAllowedHeight, comment)
+        isLegal = False
+        maxAllowedHeight = 999.0
+        comment = 'Not yet implemented'
+        canton = canton.upper()
+        if canton in self.plfDict_:
+            isLegal, maxAllowedHeight, comment = self.__interpolate(d, h, self.plfDict_[canton])
+        return (isLegal, maxAllowedHeight, comment)
+
+pflanzAbstandEngine = None
 
 def flonar_planzabstand(canton, distance, height):
-    return json.dumps('Not yet implemented')
+    global pflanzAbstandEngine
+    if pflanzAbstandEngine is None:
+        pflanzAbstandEngine = PflanzAbstandEngine(paconfigStr)
+    rechtslage = pflanzAbstandEngine.consult(canton, distance, height)
+    return json.dumps(rechtslage)
 
 def flonar_usage(request):
     return Response('Flonar usage: /flonar/pa/{canton}/{distance}/{height}')
@@ -14,10 +106,16 @@ def flonarpa_engine(request):
     canton = '%(canton)s' % request.matchdict
     distanceStr = '%(distance)s' % request.matchdict
     heightStr = '%(height)s' % request.matchdict
-    return Response('Flonar Planzabstand fuer %s: d=%s, h=%s' % (
-        canton, distanceStr, heightStr))
+    distance = float(distanceStr)
+    height = float(heightStr)
+    rsp = flonar_planzabstand(canton, distance, height)
+    return Response(rsp)
 
 if __name__ == '__main__':
+    # Engine startup test.
+    print("Startuptest: %s" % flonar_planzabstand('ZH', 2.3, 2.0))
+    print("Startuptest: %s" % flonar_planzabstand('TI', 0.4, 1.37))
+    # Webserver start.
     with Configurator() as config:
         # Pflanzabstand engine.
         config.add_route('flonarpa', '/flonar/pa/{canton}/{distance}/{height}')
