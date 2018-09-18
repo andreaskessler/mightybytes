@@ -156,6 +156,8 @@ class PflanzAbstandEngine(object):
         res['caseDistance'] = d
         res['caseHeight'] = h
         # Output.
+        if not comment:
+            comment = "keine"
         res['isLegal'] = isLegal
         res['maxAllowedHeight'] = maxAllowedHeight
         res['comment'] = comment
