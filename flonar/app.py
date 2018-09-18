@@ -162,12 +162,18 @@ def flonar_planzabstand(canton, distance, height):
     return json.dumps(rechtslage)
 
 def flonar_usage(request):
+    print(request.GET)
     return Response('Flonar usage: /flonar/pa/{canton}/{distance}/{height}')
 
 def flonarpa_engine(request):
-    canton = '%(canton)s' % request.matchdict
-    distanceStr = '%(distance)s' % request.matchdict
-    heightStr = '%(height)s' % request.matchdict
+    if "canton" in request.matchdict:
+        canton = '%(canton)s' % request.matchdict
+        distanceStr = '%(distance)s' % request.matchdict
+        heightStr = '%(height)s' % request.matchdict
+    else:
+        canton = request.GET['canton']
+        distanceStr = request.GET['distance']
+        heightStr = request.GET['height']
     distance = float(distanceStr)
     height = float(heightStr)
     rsp = flonar_planzabstand(canton, distance, height)
@@ -179,14 +185,17 @@ if __name__ == '__main__':
     print("Startuptest: %s" % flonar_planzabstand('TI', 0.4, 1.37))
     # Webserver start.
     with Configurator() as config:
-        # Pflanzabstand engine.
+        # Pflanzabstand engine IF 1.
         config.add_route('flonarpa', '/flonar/pa/{canton}/{distance}/{height}')
         config.add_view(flonarpa_engine, route_name='flonarpa')
+        # Pflanzabstand engine IF 2.
+        config.add_route('flonarpa2', '/flonar/pa')
+        config.add_view(flonarpa_engine, route_name='flonarpa2')
         # Usage help.
         config.add_route('flonar_usage1', '/flonar/')
-        config.add_route('flonar_usage2', '/flonar/{name}')
+        #config.add_route('flonar_usage2', '/flonar/{name}')
         config.add_view(flonar_usage, route_name='flonar_usage1')
-        config.add_view(flonar_usage, route_name='flonar_usage2')
+        #config.add_view(flonar_usage, route_name='flonar_usage2')
         app = config.make_wsgi_app()
     server = make_server('0.0.0.0', 80, app)
     server.serve_forever()
