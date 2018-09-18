@@ -37,7 +37,59 @@ LU;     0.5;     1;        0.5;
 LU;     4;       9999; 0;
 NE;     0;       0;        0;
 NE;     1;       1.5;      0; Sofern es sich beim Nachbargrundstück um einen Garten handelt
+NW; 0;1.5;0;
+NW; 0.75;1.6;0.5;
+NW; 1.5;3;0;
+OW; 0;0;0;
+OW; 0.3;1.2;0.1;
+SH; 0;0;0;
+SH; 0.6;1.2;0.5;
+SZ; 0;1.2;0; jährlicher Rückschnitt
+SZ; 0.5;2;0; für höhere Einfriedungen gilt der Grenzabstand des kantonalen Baugesetzes
+SO; 0;2;0;
+SO; 3;9999;0;
+SG; 0;0;0;
+SG; 0.45;1.2;0; jährlicher Rückschnitt
+TI; 0;0;0;
+TI; 0.5;1.25;0; jährlicher Rückschnitt, Maulbeerbaumhecke: 1 m Abstand zur Grenze, 2 m voneinander entfernt, Höhe maximal 2 50 m | Robinienhecke: siehe Gesetz
+TG; 0;0;0.5;
+UR; 0;0;0;
+UR; 0.3;9999;0;
+VD; 0;0;0,
+VD; 0.5;2;0.666;)
+VS; 0;0;0;
+VS; 0.5;1;0.5;
+ZG; 0;0;0;
+ZG; 0.5;1;0.5;
+"""
 
+vfconfigStr = """
+AG; 	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Gerichte gehen aber von einer Verjährungsfrist von 30 Jahren ab Pflanzung aus.
+AR;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach der Pflanzung.
+AI;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+BL;	10; Der Anspruch auf Beseitigung verjährt 10 Jahre nach der Pflanzung.
+BS;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+BE;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
+FR;	20; Der Anspruch auf Beseitigung verjährt 20 Jahre nach Pflanzung. Es sei denn die Bepflanzung wurde vor dem 1. Januar 2003 angelegt.
+GE;	30; Der Anspruch auf Beseitigung verjährt 30 Jahre nach Pflanzung.
+GL;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
+GR;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
+JU;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
+LU;	10; Der Anspruch auf Beseitigung verjährt 10 Jahre nach Pflanzung.
+NE; 	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+NW;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+OW;	2; Der Anspruch auf Beseitigung verjährt 2 Jahre nach Pflanzung.
+SH;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+SZ;	10; Der Anspruch auf Beseitigung verjährt 2 Jahre ab Kenntnis, jedoch spätestens 10 Jahren nach der Pflanzung.
+SO;	3; Der Anspruch auf Beseitigung verjährt 3 Jahre nach Pflanzung.
+SG;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+TI;	10; Der Anspruch auf Beseitigung verjährt 10 Jahre nach Pflanzung. Nach Ablauf der 10 Jahre muss die Entfernung entschädigt werden.
+TG;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
+UR;	1; Der Anspruch auf Beseitigung verjährt nach 1 Jahr und beginnt, sobald erkennbar ist, dass die Pflanzen den vorgeschriebenen Grenzabstand unterschreiten werden.
+VD;	10; Der Anspruch auf Beseitigung verjährt nach 10 Jahren. Nach Ablauf der 10 Jahre muss ein überwiegendes Interesse geltend gemacht werden.
+VS;	5; Der Anspruch auf Beseitigung verjährt nach 5 Jahren ab Pflanzung oder bei überschrittener Höhe ab Ende des Jahres.
+ZG;	5; Der Anspruch auf Beseitigung verjährt 5 Jahre nach Pflanzung.
+ZH;	9999; Der Anspruch auf Beseitigung ist unverjährbar. Die Ausübung des Rechts kann eventuell rechtsmissbräuchlich sein.
 """
 
 class PflanzAbstandEngine(object):
@@ -90,6 +142,11 @@ class PflanzAbstandEngine(object):
         if canton in self.plfDict_:
             isLegal, maxAllowedHeight, comment = self.__interpolate(d, h, self.plfDict_[canton])
         res = {}
+        # Input.
+        res['canton'] = canton
+        res['caseDistance'] = d
+        res['caseHeight'] = h
+        # Output.
         res['isLegal'] = isLegal
         res['maxAllowedHeight'] = maxAllowedHeight
         res['comment'] = comment
